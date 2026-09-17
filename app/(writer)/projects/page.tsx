@@ -6,6 +6,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import type { AppLanguage } from '@/lib/types/database'
 
 async function createProject(formData: FormData) {
   'use server'
@@ -17,7 +18,7 @@ async function createProject(formData: FormData) {
 
   const title = formData.get('title') as string
   const synopsis = formData.get('synopsis') as string
-  const language = formData.get('language') as string
+  const language = formData.get('language') as AppLanguage
 
   const { data, error } = await supabase
     .from('projects')
