@@ -1,7 +1,8 @@
 // Path: lib/types/database.ts
-// Status: NY
-// Formål: TypeScript-typer der matcher schema.sql. Opdateres manuelt indtil
-// vi evt. genererer dem automatisk via `supabase gen types`.
+// Status: OPDATERET
+// Formål: Rettet — @supabase/supabase-js's generiske typer kræver Row, Insert,
+// Update og Relationships pr. tabel. Manglede de tre sidste, faldt alle queries
+// tilbage til "never" ved type-check.
 
 export type AppLanguage = 'da' | 'en' | 'es'
 export type BookStatus = 'draft' | 'published' | 'archived'
@@ -78,17 +79,58 @@ export interface CreditTransaction {
   created_at: string
 }
 
-// Minimal Database-type til brug med createClient<Database>().
-// Udvides løbende med Insert/Update-varianter efter behov.
 export interface Database {
   public: {
     Tables: {
-      profiles: { Row: Profile }
-      projects: { Row: Project }
-      characters: { Row: Character }
-      books: { Row: Book }
-      chapters: { Row: Chapter }
-      credit_transactions: { Row: CreditTransaction }
+      profiles: {
+        Row: Profile
+        Insert: Partial<Profile> & { id: string }
+        Update: Partial<Profile>
+        Relationships: []
+      }
+      projects: {
+        Row: Project
+        Insert: Partial<Project> & { title: string; user_id: string }
+        Update: Partial<Project>
+        Relationships: []
+      }
+      characters: {
+        Row: Character
+        Insert: Partial<Character> & {
+          project_id: string
+          name: string
+          age: number
+        }
+        Update: Partial<Character>
+        Relationships: []
+      }
+      books: {
+        Row: Book
+        Insert: Partial<Book> & {
+          project_id: string
+          user_id: string
+          title: string
+          slug: string
+        }
+        Update: Partial<Book>
+        Relationships: []
+      }
+      chapters: {
+        Row: Chapter
+        Insert: Partial<Chapter> & { book_id: string; title: string }
+        Update: Partial<Chapter>
+        Relationships: []
+      }
+      credit_transactions: {
+        Row: CreditTransaction
+        Insert: Partial<CreditTransaction> & {
+          user_id: string
+          type: CreditTxType
+          amount: number
+        }
+        Update: Partial<CreditTransaction>
+        Relationships: []
+      }
     }
   }
 }
