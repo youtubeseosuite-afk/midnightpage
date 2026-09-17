@@ -1,8 +1,8 @@
 // Path: lib/types/database.ts
 // Status: OPDATERET
-// Formål: Rettet — @supabase/supabase-js's generiske typer kræver Row, Insert,
-// Update og Relationships pr. tabel. Manglede de tre sidste, faldt alle queries
-// tilbage til "never" ved type-check.
+// Formål: Rettet — nyere @supabase/supabase-js (2.74+) kræver et __InternalSupabase-
+// felt i Database-typen, ellers matcher createServerClient (fra @supabase/ssr) ikke
+// typerne, og alle queries falder tilbage til "never". Se supabase-js issue #1738.
 
 export type AppLanguage = 'da' | 'en' | 'es'
 export type BookStatus = 'draft' | 'published' | 'archived'
@@ -80,6 +80,9 @@ export interface CreditTransaction {
 }
 
 export interface Database {
+  __InternalSupabase: {
+    PostgrestVersion: '12'
+  }
   public: {
     Tables: {
       profiles: {
@@ -132,5 +135,9 @@ export interface Database {
         Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
