@@ -8,7 +8,7 @@ export type AppLanguage = 'da' | 'en' | 'es'
 export type BookStatus = 'draft' | 'published' | 'archived'
 export type CreditTxType = 'purchase' | 'ai_text' | 'ai_image' | 'refund' | 'bonus'
 
-export interface Profile {
+export type Profile = {
   id: string
   display_name: string | null
   preferred_language: AppLanguage
@@ -18,7 +18,7 @@ export interface Profile {
   updated_at: string
 }
 
-export interface Project {
+export type Project = {
   id: string
   user_id: string
   title: string
@@ -28,7 +28,7 @@ export interface Project {
   updated_at: string
 }
 
-export interface Character {
+export type Character = {
   id: string
   project_id: string
   name: string
@@ -42,7 +42,7 @@ export interface Character {
   updated_at: string
 }
 
-export interface Book {
+export type Book = {
   id: string
   project_id: string
   user_id: string
@@ -57,7 +57,7 @@ export interface Book {
   updated_at: string
 }
 
-export interface Chapter {
+export type Chapter = {
   id: string
   book_id: string
   title: string
@@ -68,7 +68,7 @@ export interface Chapter {
   updated_at: string
 }
 
-export interface CreditTransaction {
+export type CreditTransaction = {
   id: string
   user_id: string
   type: CreditTxType
@@ -79,7 +79,7 @@ export interface CreditTransaction {
   created_at: string
 }
 
-export interface Database {
+export type Database = {
   __InternalSupabase: {
     PostgrestVersion: '12'
   }
