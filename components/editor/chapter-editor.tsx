@@ -1,18 +1,21 @@
 // Path: components/editor/chapter-editor.tsx
-// Status: NY
-// Formål: Novel (Tiptap)-editor med slash-commands for et kapitel.
-// Gemmer indholdet som JSONB via PATCH-kald, debounced 1 sekund efter sidste tastetryk.
+// Status: OPDATERET
+// Formål: Rettet til novels nuværende API — pakken eksporterer ikke længere
+// et samlet <Editor>-component, kun headless byggesten (EditorRoot/EditorContent).
+// Bruger StarterKit som minimum extension-sæt; slash-commands kan bygges oven på senere.
 
 'use client'
 
-import { Editor as NovelEditor } from 'novel'
-import type { JSONContent } from '@tiptap/core'
+import { EditorRoot, EditorContent, type JSONContent } from 'novel'
+import StarterKit from '@tiptap/starter-kit'
 import { useCallback, useRef, useState } from 'react'
 
 interface ChapterEditorProps {
   chapterId: string
   initialContent: JSONContent
 }
+
+const extensions = [StarterKit]
 
 export function ChapterEditor({ chapterId, initialContent }: ChapterEditorProps) {
   const [status, setStatus] = useState<'saved' | 'saving' | 'error'>('saved')
@@ -47,15 +50,16 @@ export function ChapterEditor({ chapterId, initialContent }: ChapterEditorProps)
         {status === 'error' && 'Fejl ved gemning — prøver igen ved næste ændring'}
       </div>
 
-      <NovelEditor
-        defaultValue={initialContent}
-        disableLocalStorage
-        onUpdate={(editor) => {
-          if (!editor) return
-          saveContent(editor.getJSON())
-        }}
-        className="min-h-[500px] rounded-md border p-4"
-      />
+      <EditorRoot>
+        <EditorContent
+          initialContent={initialContent}
+          extensions={extensions}
+          className="min-h-[500px] rounded-md border p-4"
+          onUpdate={({ editor }) => {
+            saveContent(editor.getJSON())
+          }}
+        />
+      </EditorRoot>
     </div>
   )
 }
