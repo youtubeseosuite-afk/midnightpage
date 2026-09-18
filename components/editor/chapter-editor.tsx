@@ -1,6 +1,8 @@
 // Path: components/editor/chapter-editor.tsx
-// Status: OPDATERET (tilføjet UpdatedImage/ImageResizer til billed-integration,
-// og rettet at TiptapUnderline + SelectionToolbar aldrig kom med sidste gang)
+// Status: OPDATERET (rettet render: renderItems() -> render: renderItems —
+// renderItems skal være selve funktionen, ikke det statiske resultat af at
+// kalde den. Command's options er typet 'any' i novel, så fejlen var kun
+// synlig ved runtime, ikke ved type-check.)
 // Formål: Slash-commands ("/"), floating toolbar for markeret tekst (inkl.
 // billed-generator), og resizable billeder via UpdatedImage + ImageResizer.
 
@@ -51,7 +53,7 @@ export function ChapterEditor({ chapterId, projectId, initialContent }: ChapterE
       Command.configure({
         suggestion: {
           items: () => slashItems,
-          render: renderItems(),
+          render: renderItems,
         },
       }),
     ],
