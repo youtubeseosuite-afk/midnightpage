@@ -1,8 +1,5 @@
 // Path: lib/types/database.ts
-// Status: OPDATERET
-// Formål: Rettet — nyere @supabase/supabase-js (2.74+) kræver et __InternalSupabase-
-// felt i Database-typen, ellers matcher createServerClient (fra @supabase/ssr) ikke
-// typerne, og alle queries falder tilbage til "never". Se supabase-js issue #1738.
+// Status: OPDATERET (tilføjet genre-felt til Project)
 
 export type AppLanguage = 'da' | 'en' | 'es'
 export type BookStatus = 'draft' | 'published' | 'archived'
@@ -23,6 +20,7 @@ export type Project = {
   user_id: string
   title: string
   synopsis: string | null
+  genre: string | null
   language: AppLanguage
   created_at: string
   updated_at: string
