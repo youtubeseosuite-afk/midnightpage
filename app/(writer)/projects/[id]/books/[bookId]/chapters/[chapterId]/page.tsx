@@ -1,13 +1,15 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/chapters/[chapterId]/page.tsx
-// Status: OPDATERET (tilføjet Story Bible som højre kolonne — three-pane-layoutet er nu fuldt)
+// Status: OPDATERET (tilføjet Zen mode via EditorLayout)
 // Formål: Henter kapitlet + alle bogens kapitler (Outline) + projektets
-// karakterer og plot-noter (Story Bible), og renderer alle tre kolonner.
+// karakterer og plot-noter (Story Bible). EditorLayout ejer Zen mode-
+// tilstanden og skjuler Outline/Story Bible helt når den er aktiv.
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ChapterEditor } from '@/components/editor/chapter-editor'
 import { OutlineSidebar } from '@/components/editor/outline-sidebar'
 import { StoryBible } from '@/components/editor/story-bible'
+import { EditorLayout } from '@/components/editor/editor-layout'
 import type { JSONContent } from '@tiptap/core'
 
 export default async function ChapterPage({
@@ -60,29 +62,30 @@ export default async function ChapterPage({
   const initialContent = (chapter.content ?? { type: 'doc', content: [] }) as JSONContent
 
   return (
-    <div className="flex gap-6 px-4 py-10 md:px-8">
-      <OutlineSidebar
-        projectId={book.project_id}
-        bookId={chapter.book_id}
-        chapters={allChapters ?? []}
-      />
-
-      <div className="mx-auto max-w-3xl flex-1">
-        <h1 className="text-2xl font-semibold">{chapter.title}</h1>
-        <div className="mt-6">
-          <ChapterEditor
-            chapterId={chapter.id}
-            projectId={book.project_id}
-            initialContent={initialContent}
-          />
-        </div>
+    <EditorLayout
+      outline={
+        <OutlineSidebar
+          projectId={book.project_id}
+          bookId={chapter.book_id}
+          chapters={allChapters ?? []}
+        />
+      }
+      storyBible={
+        <StoryBible
+          projectId={book.project_id}
+          characters={characters ?? []}
+          initialPlotNotes={project?.plot_notes ?? null}
+        />
+      }
+    >
+      <h1 className="text-2xl font-semibold">{chapter.title}</h1>
+      <div className="mt-6">
+        <ChapterEditor
+          chapterId={chapter.id}
+          projectId={book.project_id}
+          initialContent={initialContent}
+        />
       </div>
-
-      <StoryBible
-        projectId={book.project_id}
-        characters={characters ?? []}
-        initialPlotNotes={project?.plot_notes ?? null}
-      />
-    </div>
+    </EditorLayout>
   )
 }
