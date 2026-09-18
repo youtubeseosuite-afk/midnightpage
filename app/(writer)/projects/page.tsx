@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/page.tsx
-// Status: OPDATERET (opretter nu automatisk bog+kapitel og lander direkte i editoren)
+// Status: OPDATERET (rettet projekt-listens link — pegede på en side der ikke findes)
 // Formål: Liste over brugerens projekter (Story Bibles) + form til at oprette nyt projekt.
 // RLS sikrer at kun ejerens egne projekter hentes.
 
@@ -84,7 +84,7 @@ export default async function ProjectsPage() {
         {projects?.map((project) => (
           <li key={project.id}>
             <Link
-              href={`/projects/${project.id}`}
+              href={`/projects/${project.id}/books`}
               className="block rounded-lg border p-4 hover:bg-muted"
             >
               <div className="font-medium">{project.title}</div>
