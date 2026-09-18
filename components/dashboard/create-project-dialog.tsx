@@ -1,5 +1,5 @@
 // Path: components/dashboard/create-project-dialog.tsx
-// Status: NY
+// Status: OPDATERET (genre er nu samme dropdown som /projects-siden, ikke fritekst)
 // Formål: Modal til "Create New Project". Fuldt kontrolleret udefra (open +
 // onOpenChange), så både EmptyState-knappen og "+"-kortet i grid'et kan åbne
 // den samme dialog. UI-only for nu — onCreate er en placeholder-callback,
@@ -66,12 +66,38 @@ export function CreateProjectDialog({
             <label className="block text-sm font-medium" htmlFor="dialog-genre">
               Genre
             </label>
-            <input
+            <select
               id="dialog-genre"
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
               className="mt-1 w-full rounded-md border px-3 py-2"
-            />
+            >
+              <option value="" disabled>
+                Vælg en genre
+              </option>
+              <optgroup label="Klassiske hovedgenrer">
+                <option value="Action">Action</option>
+                <option value="Adventure (Eventyr)">Adventure (Eventyr)</option>
+                <option value="Komedie">Komedie</option>
+                <option value="Drama">Drama</option>
+                <option value="Gyser (Horror)">Gyser (Horror)</option>
+                <option value="Science Fiction (Sci-Fi)">Science Fiction (Sci-Fi)</option>
+                <option value="Fantasy">Fantasy</option>
+                <option value="Thriller">Thriller</option>
+                <option value="Krimi/Mystery">Krimi/Mystery</option>
+                <option value="Romantik">Romantik</option>
+                <option value="Western">Western</option>
+                <option value="Historisk fiktion">Historisk fiktion</option>
+              </optgroup>
+              <optgroup label="Særlige nicher og stilarter">
+                <option value="Satire">Satire</option>
+                <option value="Gothic">Gothic</option>
+                <option value="Steampunk">Steampunk</option>
+                <option value="Dystopi">Dystopi</option>
+                <option value="Utopi">Utopi</option>
+                <option value="Biografi/Memoir">Biografi/Memoir</option>
+              </optgroup>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium" htmlFor="dialog-language">
