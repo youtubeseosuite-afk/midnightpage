@@ -1,8 +1,10 @@
 // Path: app/api/ai/character-suggestions/route.ts
-// Status: NY
+// Status: OPDATERET (rigtigt genre-felt, Sonnet i stedet for Haiku, strammere
+// parsing, eksplicit anti-duplikering)
 // Formål: Giver 3 kontrastfyldte forslag til ét karakterfelt ad gangen, ud fra
-// navn, alder og (hvis muligt) projektets synopsis som genre-fingerpeg. Bruger
-// Haiku, da opgaven er kort og ikke kræver Sonnets fulde kapacitet.
+// navn, alder og projektets genre. Bruger Sonnet, da "dybde og indre konflikter"
+// er præcis den nuance, Sonnet er bedre til end Haiku — koster mere pr. kald,
+// men det er en bevidst kvalitetsprioritering for en kreativ opgave som denne.
 
 import { createClient } from '@/lib/supabase/server'
 import { LANGUAGE_NAMES } from '@/lib/ai/language-names'
@@ -11,6 +13,7 @@ import { NextResponse } from 'next/server'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+const MODEL = 'claude-sonnet-5'
 const TOKENS_PER_CREDIT = 200
 
 const FIELD_LABELS = {
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, synopsis, language, user_id')
+    .select('id, genre, synopsis, language, user_id')
     .eq('id', projectId)
     .single()
 
@@ -70,18 +73,20 @@ export async function POST(request: Request) {
 
 Krav:
 - Forslagene skal være korte, skarpe og inspirerende.
-- De skal passe til bogens overordnede genre og være skrevet på ${languageName}.
+- De skal passe til bogens genre og være skrevet på ${languageName}.
 - Undgå stereotyper; skab karakterer med dybde og indre konflikter.
+- De 3 forslag skal repræsentere tydeligt forskellige tilgange til feltet — ikke tre variationer af samme grundidé.
 
 Format: Returnér kun de 3 forslag som en punktliste uden indledende tekst.`
 
   const userPrompt = `Karakter: ${name}, ${age} år.
-${project.synopsis ? `Bogens synopsis (til genre-fornemmelse): ${project.synopsis}` : ''}
+${project.genre ? `Genre: ${project.genre}` : ''}
+${project.synopsis ? `Synopsis: ${project.synopsis}` : ''}
 
 Giv 3 forskellige, kontrastfyldte forslag til feltet "${fieldLabel}".`
 
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5',
+    model: MODEL,
     max_tokens: 512,
     system,
     messages: [{ role: 'user', content: userPrompt }],
@@ -90,8 +95,15 @@ Giv 3 forskellige, kontrastfyldte forslag til feltet "${fieldLabel}".`
   const textBlock = response.content.find((block) => block.type === 'text')
   const raw = textBlock && textBlock.type === 'text' ? textBlock.text : ''
 
-  const suggestions = raw
+  const lines = raw
     .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  const bulletLines = lines.filter((line) => /^[-•*]\s+/.test(line))
+  const sourceLines = bulletLines.length > 0 ? bulletLines : lines
+
+  const suggestions = sourceLines
     .map((line) => line.replace(/^[-•*]\s*/, '').trim())
     .filter(Boolean)
     .slice(0, 3)
@@ -106,7 +118,7 @@ Giv 3 forskellige, kontrastfyldte forslag til feltet "${fieldLabel}".`
     tokens_used: totalTokens,
     reference_id: projectId,
     metadata: {
-      model: 'claude-haiku-4-5',
+      model: MODEL,
       field,
       input_tokens: response.usage.input_tokens,
       output_tokens: response.usage.output_tokens,
