@@ -1,10 +1,8 @@
 // Path: components/editor/chapter-editor.tsx
-// Status: OPDATERET
-// Formål: Tilføjet slash-commands ("/"). Bruger novels indbyggede Command-
-// extension (novel/extensions) — se lib/editor/slash-commands.tsx for selve
-// kommandolisten. handleCommandNavigation skal wrappes, fordi ProseMirrors
-// handleKeyDown tager (view, event), mens novels helper kun forventer (event)
-// — ellers fejler typen.
+// Status: OPDATERET (tilføjet UpdatedImage/ImageResizer til billed-integration,
+// og rettet at TiptapUnderline + SelectionToolbar aldrig kom med sidste gang)
+// Formål: Slash-commands ("/"), floating toolbar for markeret tekst (inkl.
+// billed-generator), og resizable billeder via UpdatedImage + ImageResizer.
 
 'use client'
 
@@ -18,10 +16,18 @@ import {
   type EditorInstance,
   type JSONContent,
 } from 'novel'
-import { Command, renderItems, handleCommandNavigation } from 'novel/extensions'
+import {
+  Command,
+  renderItems,
+  handleCommandNavigation,
+  TiptapUnderline,
+  UpdatedImage,
+  ImageResizer,
+} from 'novel/extensions'
 import StarterKit from '@tiptap/starter-kit'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { CowriterPanel } from './cowriter-panel'
+import { SelectionToolbar } from './selection-toolbar'
 import { getSlashCommandItems } from '@/lib/editor/slash-commands'
 
 interface ChapterEditorProps {
@@ -40,6 +46,8 @@ export function ChapterEditor({ chapterId, projectId, initialContent }: ChapterE
   const extensions = useMemo(
     () => [
       StarterKit,
+      TiptapUnderline,
+      UpdatedImage,
       Command.configure({
         suggestion: {
           items: () => slashItems,
@@ -119,6 +127,8 @@ export function ChapterEditor({ chapterId, projectId, initialContent }: ChapterE
               ))}
             </EditorCommandList>
           </EditorCommand>
+          <SelectionToolbar projectId={projectId} />
+          <ImageResizer />
         </EditorContent>
       </EditorRoot>
 
