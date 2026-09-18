@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/page.tsx
-// Status: NY
+// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
 // Formål: Liste over brugerens projekter (Story Bibles) + form til at oprette nyt projekt.
 // RLS sikrer at kun ejerens egne projekter hentes.
 
@@ -14,7 +14,7 @@ async function createProject(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const title = formData.get('title') as string
   const synopsis = formData.get('synopsis') as string
@@ -39,7 +39,7 @@ export default async function ProjectsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const { data: projects } = await supabase
     .from('projects')
