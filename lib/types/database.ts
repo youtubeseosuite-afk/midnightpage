@@ -1,5 +1,5 @@
 // Path: lib/types/database.ts
-// Status: OPDATERET (tilføjet genre-felt til Project)
+// Status: OPDATERET (tilføjet plot_notes-felt til Project)
 
 export type AppLanguage = 'da' | 'en' | 'es'
 export type BookStatus = 'draft' | 'published' | 'archived'
@@ -21,6 +21,7 @@ export type Project = {
   title: string
   synopsis: string | null
   genre: string | null
+  plot_notes: string | null
   language: AppLanguage
   created_at: string
   updated_at: string
