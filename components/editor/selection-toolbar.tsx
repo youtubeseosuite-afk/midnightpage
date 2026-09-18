@@ -1,14 +1,22 @@
 // Path: components/editor/selection-toolbar.tsx
-// Status: NY
-// Formål: Floating toolbar der vises, når tekst markeres. Skal renderes som
-// barn af <EditorContent> (ligesom EditorCommand), da useEditor()-context kun
-// virker der. EditorBubble håndterer selv positionering/visning (skjules
-// automatisk ved tom markering eller på billeder).
+// Status: OPDATERET (tilføjet billed-knap)
+// Formål: Floating toolbar for markeret tekst. Billed-knappen sender den
+// markerede tekst som prompt til /api/ai/generate-image og indsætter
+// resultatet direkte via UpdatedImage-nodens setImage-kommando. Skal
+// renderes som barn af <EditorContent>, ligesom EditorCommand.
 
 'use client'
 
+import { useState } from 'react'
 import { EditorBubble, EditorBubbleItem, useEditor, type EditorInstance } from 'novel'
-import { Bold, Italic, Underline as UnderlineIcon, Strikethrough } from 'lucide-react'
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  ImageIcon,
+  Loader2,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MarkButton {
@@ -45,9 +53,36 @@ const MARK_BUTTONS: MarkButton[] = [
   },
 ]
 
-export function SelectionToolbar() {
+interface SelectionToolbarProps {
+  projectId: string
+}
+
+export function SelectionToolbar({ projectId }: SelectionToolbarProps) {
   const { editor } = useEditor()
+  const [generatingImage, setGeneratingImage] = useState(false)
+
   if (!editor) return null
+
+  async function generateImage(ed: EditorInstance) {
+    const { from, to } = ed.state.selection
+    const prompt = ed.state.doc.textBetween(from, to, ' ').trim()
+    if (!prompt || generatingImage) return
+
+    setGeneratingImage(true)
+    try {
+      const res = await fetch('/api/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, projectId }),
+      })
+      const data = await res.json()
+      if (res.ok && data.url) {
+        ed.chain().focus().setImage({ src: data.url, alt: prompt }).run()
+      }
+    } finally {
+      setGeneratingImage(false)
+    }
+  }
 
   return (
     <EditorBubble className="flex gap-0.5 rounded-md border border-border/50 bg-popover/95 p-1 shadow-md backdrop-blur-md">
@@ -67,6 +102,20 @@ export function SelectionToolbar() {
           </EditorBubbleItem>
         )
       })}
+
+      <EditorBubbleItem
+        onSelect={(ed) => generateImage(ed)}
+        className={cn(
+          'flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm hover:bg-accent',
+          generatingImage && 'pointer-events-none opacity-50'
+        )}
+      >
+        {generatingImage ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <ImageIcon className="h-4 w-4" />
+        )}
+      </EditorBubbleItem>
     </EditorBubble>
   )
 }
