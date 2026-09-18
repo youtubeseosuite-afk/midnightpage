@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/chapters/[chapterId]/page.tsx
-// Status: OPDATERET (tilføjet Zen mode via EditorLayout)
+// Status: OPDATERET (initialContent-faldback tjekker nu for gyldigt type-felt, ikke kun null/undefined — se migration 0004)
 // Formål: Henter kapitlet + alle bogens kapitler (Outline) + projektets
 // karakterer og plot-noter (Story Bible). EditorLayout ejer Zen mode-
 // tilstanden og skjuler Outline/Story Bible helt når den er aktiv.
@@ -59,7 +59,11 @@ export default async function ChapterPage({
     .eq('project_id', book.project_id)
     .order('created_at', { ascending: true })
 
-  const initialContent = (chapter.content ?? { type: 'doc', content: [] }) as JSONContent
+  const rawContent = chapter.content as JSONContent | null | undefined
+  const initialContent: JSONContent =
+    rawContent && typeof rawContent === 'object' && 'type' in rawContent
+      ? rawContent
+      : { type: 'doc', content: [] }
 
   return (
     <EditorLayout
