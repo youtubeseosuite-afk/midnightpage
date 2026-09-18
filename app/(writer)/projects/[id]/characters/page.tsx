@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/characters/page.tsx
-// Status: OPDATERET
+// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
 // Formål: Karakter-generator for et givent projekt. Navn og Alder er
 // obligatoriske, resten er valgfrit og gemmes i separate kolonner til AI-kontekst.
 // Formularen er nu udliftet til CharacterForm (client) med "Foreslå"-knapper.
@@ -14,7 +14,7 @@ async function createCharacter(projectId: string, formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const name = formData.get('name') as string
   const age = Number(formData.get('age'))
@@ -53,7 +53,7 @@ export default async function CharactersPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const { data: project } = await supabase
     .from('projects')
