@@ -1,25 +1,29 @@
 // Path: components/editor/chapter-editor.tsx
 // Status: OPDATERET
-// Formål: Rettet til novels nuværende API — pakken eksporterer ikke længere
-// et samlet <Editor>-component, kun headless byggesten (EditorRoot/EditorContent).
-// Bruger StarterKit som minimum extension-sæt; slash-commands kan bygges oven på senere.
+// Formål: Tilføjet Co-writer-panelet. Editor-instansen fanges via onCreate og gemmes
+// i en ref, så CowriterPanel kan indsætte AI-forslag direkte i teksten uden at skulle
+// være barn af <EditorContent> (novels useEditor-context virker kun der, ikke som
+// sideordnet komponent i <EditorRoot>).
 
 'use client'
 
-import { EditorRoot, EditorContent, type JSONContent } from 'novel'
+import { EditorRoot, EditorContent, type EditorInstance, type JSONContent } from 'novel'
 import StarterKit from '@tiptap/starter-kit'
 import { useCallback, useRef, useState } from 'react'
+import { CowriterPanel } from './cowriter-panel'
 
 interface ChapterEditorProps {
   chapterId: string
+  projectId: string
   initialContent: JSONContent
 }
 
 const extensions = [StarterKit]
 
-export function ChapterEditor({ chapterId, initialContent }: ChapterEditorProps) {
+export function ChapterEditor({ chapterId, projectId, initialContent }: ChapterEditorProps) {
   const [status, setStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const editorRef = useRef<EditorInstance | null>(null)
 
   const saveContent = useCallback(
     (content: JSONContent) => {
@@ -42,6 +46,10 @@ export function ChapterEditor({ chapterId, initialContent }: ChapterEditorProps)
     [chapterId]
   )
 
+  const insertText = useCallback((text: string) => {
+    editorRef.current?.chain().focus().insertContent(text).run()
+  }, [])
+
   return (
     <div>
       <div className="mb-2 text-xs text-muted-foreground">
@@ -55,11 +63,16 @@ export function ChapterEditor({ chapterId, initialContent }: ChapterEditorProps)
           initialContent={initialContent}
           extensions={extensions}
           className="min-h-[500px] rounded-md border p-4"
+          onCreate={({ editor }) => {
+            editorRef.current = editor
+          }}
           onUpdate={({ editor }) => {
             saveContent(editor.getJSON())
           }}
         />
       </EditorRoot>
+
+      <CowriterPanel projectId={projectId} onInsert={insertText} />
     </div>
   )
 }
