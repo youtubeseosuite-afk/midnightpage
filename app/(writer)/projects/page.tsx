@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/page.tsx
-// Status: OPDATERET (tilføjet genre-felt i formular og liste)
+// Status: OPDATERET (genre er nu en dropdown med faste genre-navne, ikke fritekst)
 // Formål: Liste over brugerens projekter (Story Bibles) + form til at oprette nyt projekt.
 // RLS sikrer at kun ejerens egne projekter hentes.
 
@@ -96,12 +96,38 @@ export default async function ProjectsPage() {
           <label className="block text-sm font-medium" htmlFor="genre">
             Genre
           </label>
-          <input
+          <select
             id="genre"
             name="genre"
-            placeholder="fx fantasy, sci-fi thriller, drama"
+            defaultValue=""
             className="mt-1 w-full rounded-md border px-3 py-2"
-          />
+          >
+            <option value="" disabled>
+              Vælg en genre
+            </option>
+            <optgroup label="Klassiske hovedgenrer">
+              <option value="Action">Action</option>
+              <option value="Adventure (Eventyr)">Adventure (Eventyr)</option>
+              <option value="Komedie">Komedie</option>
+              <option value="Drama">Drama</option>
+              <option value="Gyser (Horror)">Gyser (Horror)</option>
+              <option value="Science Fiction (Sci-Fi)">Science Fiction (Sci-Fi)</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Thriller">Thriller</option>
+              <option value="Krimi/Mystery">Krimi/Mystery</option>
+              <option value="Romantik">Romantik</option>
+              <option value="Western">Western</option>
+              <option value="Historisk fiktion">Historisk fiktion</option>
+            </optgroup>
+            <optgroup label="Særlige nicher og stilarter">
+              <option value="Satire">Satire</option>
+              <option value="Gothic">Gothic</option>
+              <option value="Steampunk">Steampunk</option>
+              <option value="Dystopi">Dystopi</option>
+              <option value="Utopi">Utopi</option>
+              <option value="Biografi/Memoir">Biografi/Memoir</option>
+            </optgroup>
+          </select>
         </div>
 
         <div>
