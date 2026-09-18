@@ -1,12 +1,13 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/chapters/[chapterId]/page.tsx
-// Status: OPDATERET (tilføjet Outline sidebar — første del af three-pane-layoutet)
-// Formål: Henter kapitlet + alle bogens kapitler (til Outline) + bogens
-// project_id, og renderer Outline sidebar + editoren side om side.
+// Status: OPDATERET (tilføjet Story Bible som højre kolonne — three-pane-layoutet er nu fuldt)
+// Formål: Henter kapitlet + alle bogens kapitler (Outline) + projektets
+// karakterer og plot-noter (Story Bible), og renderer alle tre kolonner.
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ChapterEditor } from '@/components/editor/chapter-editor'
 import { OutlineSidebar } from '@/components/editor/outline-sidebar'
+import { StoryBible } from '@/components/editor/story-bible'
 import type { JSONContent } from '@tiptap/core'
 
 export default async function ChapterPage({
@@ -44,6 +45,18 @@ export default async function ChapterPage({
     .eq('book_id', chapter.book_id)
     .order('order_index', { ascending: true })
 
+  const { data: project } = await supabase
+    .from('projects')
+    .select('plot_notes')
+    .eq('id', book.project_id)
+    .single()
+
+  const { data: characters } = await supabase
+    .from('characters')
+    .select('id, name, age, motivation, backstory')
+    .eq('project_id', book.project_id)
+    .order('created_at', { ascending: true })
+
   const initialContent = (chapter.content ?? { type: 'doc', content: [] }) as JSONContent
 
   return (
@@ -64,6 +77,12 @@ export default async function ChapterPage({
           />
         </div>
       </div>
+
+      <StoryBible
+        projectId={book.project_id}
+        characters={characters ?? []}
+        initialPlotNotes={project?.plot_notes ?? null}
+      />
     </div>
   )
 }
