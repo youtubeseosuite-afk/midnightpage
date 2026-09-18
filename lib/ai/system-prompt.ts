@@ -1,17 +1,12 @@
 // Path: lib/ai/system-prompt.ts
-// Status: NY
+// Status: OPDATERET (genbruger nu LANGUAGE_NAMES fra lib/ai/language-names.ts)
 // Formål: Bygger system-prompten til AI Co-writer. Opdelt i to blokke, hver med sit
 // eget cache_control-breakpoint: (1) de statiske persona-instrukser, som aldrig ændrer
 // sig, og (2) Story Bible-data (synopsis + karakterer), som ændrer sig sjældnere end
 // selve chat-beskeden. Begge caches separat via Anthropics Prompt Caching.
 
 import type { Character, Project } from '@/lib/types/database'
-
-const LANGUAGE_NAMES: Record<Project['language'], string> = {
-  da: 'Dansk',
-  en: 'English',
-  es: 'Español',
-}
+import { LANGUAGE_NAMES } from './language-names'
 
 const PERSONA_INSTRUCTIONS = `Du er en professionel kreativ skrivepartner (Co-writer). Din opgave er at hjælpe forfatteren med at udvikle deres historie, forbedre prosaen og sikre narrativ konsistens uden at overtage forfatterens unikke stemme.
 
