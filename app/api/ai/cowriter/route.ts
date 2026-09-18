@@ -1,5 +1,7 @@
 // Path: app/api/ai/cowriter/route.ts
-// Status: NY
+// Status: OPDATERET (Anthropic-kaldet er nu i try/catch — uden det crashede
+// hele endpointet uden om JSON ved fejl, så klienten kun så en generisk
+// "kunne ikke kontakte"-besked i stedet for den faktiske årsag)
 // Formål: AI Co-writer-endpoint. Henter Story Bible (synopsis + karakterer), kalder
 // Claude med Prompt Caching, og trækker credits fra brugerens saldo efter kaldet
 // baseret på det faktiske token-forbrug (inkl. cache-oprettelse).
@@ -67,12 +69,21 @@ export async function POST(request: Request) {
   const system = buildSystemPrompt(project, characters ?? [])
   const modelId = MODELS[model as keyof typeof MODELS] ?? MODELS.sonnet
 
-  const response = await anthropic.messages.create({
-    model: modelId,
-    max_tokens: 2048,
-    system,
-    messages: [{ role: 'user', content: prompt }],
-  })
+  let response
+  try {
+    response = await anthropic.messages.create({
+      model: modelId,
+      max_tokens: 2048,
+      system,
+      messages: [{ role: 'user', content: prompt }],
+    })
+  } catch (error) {
+    console.error('Anthropic-kald fejlede:', error)
+    return NextResponse.json(
+      { error: 'Kald til Claude fejlede — tjek ANTHROPIC_API_KEY og Vercel-logs' },
+      { status: 502 }
+    )
+  }
 
   const textBlock = response.content.find((block) => block.type === 'text')
   const text = textBlock && textBlock.type === 'text' ? textBlock.text : ''
