@@ -1,5 +1,5 @@
 // Path: lib/supabase/middleware.ts
-// Status: NY
+// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
 // Formål: Refresher Supabase auth-cookies på hvert request (kræves af @supabase/ssr)
 // og redirecter til /login hvis en uautentificeret bruger rammer /projects.
 
@@ -39,10 +39,10 @@ export async function updateSession(request: NextRequest) {
   if (
     !user &&
     request.nextUrl.pathname.startsWith('/projects') &&
-    !request.nextUrl.pathname.startsWith('/login')
+    !request.nextUrl.pathname.startsWith('/writer')
   ) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/writer/login'
     return NextResponse.redirect(url)
   }
 
