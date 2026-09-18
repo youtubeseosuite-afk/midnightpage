@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/books/page.tsx
-// Status: NY
+// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
 // Formål: Liste over bøger i et projekt + opret ny bog. Ved oprettelse genereres en
 // unik slug, og der oprettes automatisk et første kapitel, så forfatteren kan gå
 // direkte i gang med at skrive.
@@ -16,7 +16,7 @@ async function createBook(projectId: string, formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const title = formData.get('title') as string
   const description = (formData.get('description') as string) || null
@@ -64,7 +64,7 @@ export default async function BooksPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const { data: project } = await supabase
     .from('projects')
