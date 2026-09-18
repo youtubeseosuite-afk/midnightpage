@@ -1,11 +1,12 @@
 // Path: app/(writer)/projects/page.tsx
-// Status: OPDATERET (genre er nu en dropdown med faste genre-navne, ikke fritekst)
+// Status: OPDATERET (opretter nu automatisk bog+kapitel og lander direkte i editoren)
 // Formål: Liste over brugerens projekter (Story Bibles) + form til at oprette nyt projekt.
 // RLS sikrer at kun ejerens egne projekter hentes.
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { slugify } from '@/lib/utils/slugify'
 import type { AppLanguage } from '@/lib/types/database'
 
 async function createProject(formData: FormData) {
@@ -21,18 +22,46 @@ async function createProject(formData: FormData) {
   const genre = (formData.get('genre') as string) || null
   const language = formData.get('language') as AppLanguage
 
-  const { data, error } = await supabase
+  const { data: project, error } = await supabase
     .from('projects')
     .insert({ title, synopsis, genre, language, user_id: user.id })
     .select('id')
     .single()
 
-  if (error) {
+  if (error || !project) {
     console.error(error)
     return
   }
 
-  redirect(`/projects/${data.id}`)
+  // Opret automatisk en første bog + kapitel, så brugeren lander direkte i
+  // editoren i stedet for på en side der ikke findes (/projects/[id]).
+  const { data: book } = await supabase
+    .from('books')
+    .insert({
+      project_id: project.id,
+      user_id: user.id,
+      title,
+      language,
+      slug: slugify(title),
+    })
+    .select('id')
+    .single()
+
+  if (!book) {
+    redirect(`/projects/${project.id}/books`)
+  }
+
+  const { data: chapter } = await supabase
+    .from('chapters')
+    .insert({ book_id: book.id, title: 'Kapitel 1', order_index: 0 })
+    .select('id')
+    .single()
+
+  if (chapter) {
+    redirect(`/projects/${project.id}/books/${book.id}/chapters/${chapter.id}`)
+  }
+
+  redirect(`/projects/${project.id}/books/${book.id}`)
 }
 
 export default async function ProjectsPage() {
