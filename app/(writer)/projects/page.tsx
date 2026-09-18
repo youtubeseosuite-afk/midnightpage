@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/page.tsx
-// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
+// Status: OPDATERET (tilføjet genre-felt i formular og liste)
 // Formål: Liste over brugerens projekter (Story Bibles) + form til at oprette nyt projekt.
 // RLS sikrer at kun ejerens egne projekter hentes.
 
@@ -18,11 +18,12 @@ async function createProject(formData: FormData) {
 
   const title = formData.get('title') as string
   const synopsis = formData.get('synopsis') as string
+  const genre = (formData.get('genre') as string) || null
   const language = formData.get('language') as AppLanguage
 
   const { data, error } = await supabase
     .from('projects')
-    .insert({ title, synopsis, language, user_id: user.id })
+    .insert({ title, synopsis, genre, language, user_id: user.id })
     .select('id')
     .single()
 
@@ -43,7 +44,7 @@ export default async function ProjectsPage() {
 
   const { data: projects } = await supabase
     .from('projects')
-    .select('id, title, synopsis, language, created_at')
+    .select('id, title, synopsis, genre, language, created_at')
     .order('created_at', { ascending: false })
 
   return (
@@ -58,6 +59,9 @@ export default async function ProjectsPage() {
               className="block rounded-lg border p-4 hover:bg-muted"
             >
               <div className="font-medium">{project.title}</div>
+              {project.genre && (
+                <span className="text-xs text-muted-foreground">{project.genre}</span>
+              )}
               {project.synopsis && (
                 <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                   {project.synopsis}
@@ -84,6 +88,18 @@ export default async function ProjectsPage() {
             id="title"
             name="title"
             required
+            className="mt-1 w-full rounded-md border px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium" htmlFor="genre">
+            Genre
+          </label>
+          <input
+            id="genre"
+            name="genre"
+            placeholder="fx fantasy, sci-fi thriller, drama"
             className="mt-1 w-full rounded-md border px-3 py-2"
           />
         </div>
