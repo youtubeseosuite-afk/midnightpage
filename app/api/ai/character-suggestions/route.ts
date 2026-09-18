@@ -1,6 +1,6 @@
 // Path: app/api/ai/character-suggestions/route.ts
-// Status: OPDATERET (rigtigt genre-felt, Sonnet i stedet for Haiku, strammere
-// parsing, eksplicit anti-duplikering)
+// Status: OPDATERET (Anthropic-kaldet er nu i try/catch, samme fix som
+// cowriter-endpointet — crashede før uden om JSON ved fejl)
 // Formål: Giver 3 kontrastfyldte forslag til ét karakterfelt ad gangen, ud fra
 // navn, alder og projektets genre. Bruger Sonnet, da "dybde og indre konflikter"
 // er præcis den nuance, Sonnet er bedre til end Haiku — koster mere pr. kald,
@@ -85,12 +85,21 @@ ${project.synopsis ? `Synopsis: ${project.synopsis}` : ''}
 
 Giv 3 forskellige, kontrastfyldte forslag til feltet "${fieldLabel}".`
 
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 512,
-    system,
-    messages: [{ role: 'user', content: userPrompt }],
-  })
+  let response
+  try {
+    response = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 512,
+      system,
+      messages: [{ role: 'user', content: userPrompt }],
+    })
+  } catch (error) {
+    console.error('Anthropic-kald fejlede:', error)
+    return NextResponse.json(
+      { error: 'Kald til Claude fejlede — tjek ANTHROPIC_API_KEY og Vercel-logs' },
+      { status: 502 }
+    )
+  }
 
   const textBlock = response.content.find((block) => block.type === 'text')
   const raw = textBlock && textBlock.type === 'text' ? textBlock.text : ''
