@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/page.tsx
-// Status: NY
+// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
 // Formål: Bogens oversigt — liste over kapitler, opret nyt kapitel, og
 // udgivelses-flow (draft <-> published). Del af trin 6 (publiceringsflow).
 
@@ -19,7 +19,7 @@ async function createChapter(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const title = formData.get('title') as string
 
@@ -47,7 +47,7 @@ async function togglePublish(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const nextStatus: BookStatus = currentStatus === 'published' ? 'draft' : 'published'
 
@@ -72,7 +72,7 @@ export default async function BookPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const { data: book } = await supabase
     .from('books')
