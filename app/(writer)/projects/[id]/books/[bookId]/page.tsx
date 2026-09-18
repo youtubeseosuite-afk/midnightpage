@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/page.tsx
-// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
+// Status: OPDATERET (udgivelse sætter nu også kapitlernes status, ikke kun bogens)
 // Formål: Bogens oversigt — liste over kapitler, opret nyt kapitel, og
 // udgivelses-flow (draft <-> published). Del af trin 6 (publiceringsflow).
 
@@ -58,6 +58,11 @@ async function togglePublish(
       published_at: nextStatus === 'published' ? new Date().toISOString() : null,
     })
     .eq('id', bookId)
+
+  // RLS for offentlig læsning kræver book.status = 'published' OG chapters.status
+  // = 'published' — uden denne opdatering ville udgivne bøger vise en tom liste
+  // af kapitler i Reader's Portal.
+  await supabase.from('chapters').update({ status: nextStatus }).eq('book_id', bookId)
 
   redirect(`/projects/${projectId}/books/${bookId}`)
 }
