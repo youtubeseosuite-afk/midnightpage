@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/chapters/[chapterId]/page.tsx
-// Status: OPDATERET
+// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
 // Formål: Henter kapitlet (kun ejer, via RLS) + bogens project_id, og renderer
 // klient-editoren med Co-writer-panelet, som skal kende projectId.
 
@@ -19,7 +19,7 @@ export default async function ChapterPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/writer/login')
 
   const { data: chapter } = await supabase
     .from('chapters')
