@@ -1,17 +1,23 @@
 // Path: app/read/page.tsx
-// Status: NY
-// Formål: Reader's Portal-forsiden. Offentlig, kræver ikke login — RLS tillader
-// SELECT på published rows for alle. Filtrerbar på sprog via ?lang=da/en/es.
+// Status: OPDATERET (fuldt redesign — Reader's Portal har nu sin egen visuelle
+// identitet: mørk "ink"-baggrund, fremhævet bog øverst, genre-hylder med
+// bogrygge i stedet for et SaaS-kort-gitter)
+// Formål: Bibliotekets forside. Genre kommer fra projects (books har den
+// ikke direkte), så vi slår projekt-genre op separat og grupperer i JS —
+// undgår embedded/join-selects, som vores Relationships-typer ikke
+// understøtter pænt.
 
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import type { AppLanguage } from '@/lib/types/database'
+import type { AppLanguage, Book } from '@/lib/types/database'
 
 const LANGS: { code: AppLanguage; label: string }[] = [
   { code: 'da', label: 'Dansk' },
   { code: 'en', label: 'English' },
   { code: 'es', label: 'Español' },
 ]
+
+const SPINE_ACCENTS = ['#E4A44C', '#7A2B32']
 
 export default async function ReadHomePage({
   searchParams,
@@ -24,46 +30,100 @@ export default async function ReadHomePage({
   const supabase = await createClient()
   const { data: books } = await supabase
     .from('books')
-    .select('id, title, description, slug, language')
+    .select('id, title, description, slug, language, project_id, published_at')
     .eq('status', 'published')
     .eq('language', activeLang)
     .order('published_at', { ascending: false })
 
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-semibold">Bibliotek</h1>
+  const projectIds = [...new Set((books ?? []).map((b) => b.project_id))]
 
-      <div className="mt-4 flex gap-2">
-        {LANGS.map((l) => (
-          <Link
-            key={l.code}
-            href={`/read?lang=${l.code}`}
-            className={`rounded-md border px-3 py-1.5 text-sm ${
-              activeLang === l.code ? 'bg-primary text-primary-foreground' : ''
-            }`}
-          >
-            {l.label}
-          </Link>
-        ))}
+  const { data: projects } = projectIds.length
+    ? await supabase.from('projects').select('id, genre').in('id', projectIds)
+    : { data: [] }
+
+  const genreByProjectId = new Map(projects?.map((p) => [p.id, p.genre]))
+
+  const featured = books?.[0] ?? null
+  const rest = books?.slice(1) ?? []
+
+  type ShelfBook = Pick<Book, 'id' | 'title' | 'slug'>
+  const shelves = new Map<string, ShelfBook[]>()
+  for (const book of rest) {
+    const genre = genreByProjectId.get(book.project_id) ?? 'Andet'
+    if (!shelves.has(genre)) shelves.set(genre, [])
+    shelves.get(genre)!.push(book)
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between px-6 py-6">
+        <span className="font-display text-lg text-[#F2E8D5]">Midnight Page</span>
+        <div className="flex gap-4 text-sm">
+          {LANGS.map((l) => (
+            <Link
+              key={l.code}
+              href={`/read?lang=${l.code}`}
+              className={
+                activeLang === l.code
+                  ? 'text-[#E4A44C]'
+                  : 'text-[#8B90AD] transition-colors hover:text-[#F2E8D5]'
+              }
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
-      <ul className="mt-6 space-y-4">
-        {books?.map((book) => (
-          <li key={book.id} className="rounded-lg border p-4">
-            <Link href={`/read/${book.slug}`} className="font-medium hover:underline">
-              {book.title}
-            </Link>
-            {book.description && (
-              <p className="mt-1 text-sm text-muted-foreground">{book.description}</p>
+      {featured ? (
+        <section className="border-b border-[#2A2D40] px-6 py-16 md:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="font-ui text-sm text-[#8B90AD]">På natbordet</p>
+            <h1 className="mt-4 font-display text-4xl font-medium leading-tight text-[#F2E8D5] md:text-6xl">
+              {featured.title}
+            </h1>
+            {featured.description && (
+              <p className="mx-auto mt-6 max-w-xl font-reading text-lg leading-relaxed text-[#B8BAD1]">
+                {featured.description}
+              </p>
             )}
-          </li>
-        ))}
-        {books?.length === 0 && (
-          <p className="text-sm text-muted-foreground">
+            <Link
+              href={`/read/${featured.slug}`}
+              className="mt-8 inline-block rounded-full bg-[#E4A44C] px-8 py-3 font-ui text-sm font-medium text-[#13141F] transition-transform hover:scale-105"
+            >
+              Læs nu
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="px-6 py-24 text-center">
+          <p className="font-reading text-lg text-[#8B90AD]">
             Ingen publicerede bøger på dette sprog endnu.
           </p>
-        )}
-      </ul>
+        </section>
+      )}
+
+      {Array.from(shelves.entries()).map(([genre, shelfBooks], shelfIndex) => (
+        <section key={genre} className="px-6 py-10">
+          <h2 className="font-display text-xl text-[#F2E8D5]">{genre}</h2>
+          <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
+            {shelfBooks.map((book, i) => (
+              <Link
+                key={book.id}
+                href={`/read/${book.slug}`}
+                className="group flex h-64 w-24 flex-shrink-0 flex-col justify-end rounded-sm border-l-2 bg-[#1C1E2C] p-3 transition-transform hover:-translate-y-1"
+                style={{
+                  borderLeftColor: SPINE_ACCENTS[(shelfIndex + i) % SPINE_ACCENTS.length],
+                }}
+              >
+                <span className="font-display text-sm leading-snug text-[#E8E1CE] [writing-mode:vertical-rl]">
+                  {book.title}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }
