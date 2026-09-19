@@ -1,6 +1,7 @@
 // Path: app/read/page.tsx
-// Status: OPDATERET (sprog-piller fjernet, filtrerer nu altid på dansk, jf.
-// beslutning om kun ét sprog)
+// Status: OPDATERET (AI-omtale fjernet fra tom-tilstanden — læsere skal ikke
+// vide at AI hjælper forfatteren, det er kun forfatterens sag. Tilføjet en
+// genre-oversigt i stedet, så siden føles som en rigtig udgiver-landingsside)
 // Formål: Bibliotekets forside. Genre kommer fra projects (books har den
 // ikke direkte), så vi slår projekt-genre op separat og grupperer i JS —
 // undgår embedded/join-selects, som vores Relationships-typer ikke
@@ -11,6 +12,21 @@ import Link from 'next/link'
 import type { Book } from '@/lib/types/database'
 
 const SPINE_ACCENTS = ['#E4A44C', '#7A2B32']
+
+const GENRES = [
+  'Action',
+  'Eventyr',
+  'Komedie',
+  'Drama',
+  'Gyser',
+  'Science Fiction',
+  'Fantasy',
+  'Thriller',
+  'Krimi',
+  'Romantik',
+  'Western',
+  'Historisk fiktion',
+]
 
 export default async function ReadHomePage() {
   const supabase = await createClient()
@@ -69,13 +85,23 @@ export default async function ReadHomePage() {
       ) : (
         <section className="mx-auto max-w-2xl px-6 py-24 text-center">
           <h1 className="font-display text-4xl font-medium leading-tight text-[#F2E8D5] md:text-5xl">
-            Historier født med en forfatter og en AI-partner
+            Historier, der holder dig oppe efter midnat
           </h1>
           <p className="mx-auto mt-6 max-w-xl font-reading text-lg leading-relaxed text-[#B8BAD1]">
-            Midnight Page samler original skønlitteratur, skrevet af rigtige
-            forfattere med hjælp fra AI. Der er endnu ingen bøger udgivet, men de
-            første historier er på vej. Kig forbi igen snart.
+            Midnight Page er et hjem for original skønlitteratur — fra episk fantasy
+            til klaustrofobisk krimi. De første historier er på vej. Kig forbi igen
+            snart.
           </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+            {GENRES.map((genre) => (
+              <span
+                key={genre}
+                className="rounded-full border border-[#2A2D40] px-4 py-1.5 font-ui text-sm text-[#8B90AD]"
+              >
+                {genre}
+              </span>
+            ))}
+          </div>
         </section>
       )}
 
