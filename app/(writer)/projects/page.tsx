@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/page.tsx
-// Status: OPDATERET (rettet projekt-listens link — pegede på en side der ikke findes)
+// Status: OPDATERET (sprog-dropdown fjernet — hardcoder til dansk, jf. beslutning om kun ét sprog)
 // Formål: Liste over brugerens projekter (Story Bibles) + form til at oprette nyt projekt.
 // RLS sikrer at kun ejerens egne projekter hentes.
 
@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { slugify } from '@/lib/utils/slugify'
-import type { AppLanguage } from '@/lib/types/database'
 
 async function createProject(formData: FormData) {
   'use server'
@@ -20,7 +19,7 @@ async function createProject(formData: FormData) {
   const title = formData.get('title') as string
   const synopsis = formData.get('synopsis') as string
   const genre = (formData.get('genre') as string) || null
-  const language = formData.get('language') as AppLanguage
+  const language = 'da' as const
 
   const { data: project, error } = await supabase
     .from('projects')
@@ -169,22 +168,6 @@ export default async function ProjectsPage() {
             rows={4}
             className="mt-1 w-full rounded-md border px-3 py-2"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium" htmlFor="language">
-            Sprog
-          </label>
-          <select
-            id="language"
-            name="language"
-            defaultValue="da"
-            className="mt-1 w-full rounded-md border px-3 py-2"
-          >
-            <option value="da">Dansk</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
         </div>
 
         <button
