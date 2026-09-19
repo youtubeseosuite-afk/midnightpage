@@ -1,8 +1,7 @@
 // Path: components/editor/chapter-editor.tsx
-// Status: OPDATERET (rettet render: renderItems() -> render: renderItems —
-// renderItems skal være selve funktionen, ikke det statiske resultat af at
-// kalde den. Command's options er typet 'any' i novel, så fejlen var kun
-// synlig ved runtime, ikke ved type-check.)
+// Status: OPDATERET (insertText fra Co-writer-panelet indsætter nu altid ved
+// slutningen af dokumentet — .focus() uden position kunne lande markøren et
+// tilfældigt sted og overskrive brugerens egen tekst)
 // Formål: Slash-commands ("/"), floating toolbar for markeret tekst (inkl.
 // billed-generator), og resizable billeder via UpdatedImage + ImageResizer.
 
@@ -82,7 +81,10 @@ export function ChapterEditor({ chapterId, projectId, initialContent }: ChapterE
   )
 
   const insertText = useCallback((text: string) => {
-    editorRef.current?.chain().focus().insertContent(text).run()
+    const editor = editorRef.current
+    if (!editor) return
+    const end = editor.state.doc.content.size
+    editor.chain().focus().insertContentAt(end, `\n${text}`).run()
   }, [])
 
   return (
