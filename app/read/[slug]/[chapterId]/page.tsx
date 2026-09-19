@@ -1,7 +1,9 @@
 // Path: app/read/[slug]/[chapterId]/page.tsx
-// Status: NY
-// Formål: Selve læsevisningen af et publiceret kapitel. Kræver at både bogen og
-// kapitlet har status 'published' (RLS tillader det for alle, ingen login krævet).
+// Status: OPDATERET ("den lysende side" — en varm papir-flade med et sagte
+// rav-skær omkring sig, midt i det mørke bibliotek. Det er kernebilledet i
+// Reader's Portals visuelle identitet, direkte fra navnet Midnight Page)
+// Formål: Selve læsevisningen. Arver den mørke baggrund fra
+// app/read/layout.tsx; selve teksten sidder på en lys parchment-flade.
 
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
@@ -53,27 +55,41 @@ export default async function PublicChapterPage({
   const content = (chapter.content ?? { type: 'doc', content: [] }) as JSONContent
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <Link href={`/read/${slug}`} className="text-sm text-muted-foreground hover:underline">
-        ← {book.title}
-      </Link>
-
-      <h1 className="mt-4 text-2xl font-semibold">{chapter.title}</h1>
-
-      <div className="mt-8">
-        <RenderTiptapContent content={content} />
+    <div className="px-4 py-10 md:px-8 md:py-16">
+      <div className="mx-auto max-w-2xl">
+        <Link
+          href={`/read/${slug}`}
+          className="font-ui text-sm text-[#8B90AD] hover:text-[#F2E8D5]"
+        >
+          ← {book.title}
+        </Link>
       </div>
 
-      <div className="mt-12 flex items-center justify-between border-t pt-6 text-sm">
+      <div className="mx-auto mt-8 max-w-2xl rounded-sm bg-[#F2E8D5] px-8 py-12 shadow-[0_0_80px_rgba(228,164,76,0.1)] md:px-16 md:py-20">
+        <h1 className="font-display text-2xl font-medium text-[#2A1F14] md:text-3xl">
+          {chapter.title}
+        </h1>
+        <div className="mt-8 font-reading text-[#2A1F14]">
+          <RenderTiptapContent content={content} />
+        </div>
+      </div>
+
+      <div className="mx-auto mt-8 flex max-w-2xl items-center justify-between font-ui text-sm">
         {prevChapter ? (
-          <Link href={`/read/${slug}/${prevChapter.id}`} className="hover:underline">
+          <Link
+            href={`/read/${slug}/${prevChapter.id}`}
+            className="text-[#8B90AD] transition-colors hover:text-[#E4A44C]"
+          >
             ← Forrige kapitel
           </Link>
         ) : (
           <span />
         )}
         {nextChapter ? (
-          <Link href={`/read/${slug}/${nextChapter.id}`} className="hover:underline">
+          <Link
+            href={`/read/${slug}/${nextChapter.id}`}
+            className="text-[#8B90AD] transition-colors hover:text-[#E4A44C]"
+          >
             Næste kapitel →
           </Link>
         ) : (
