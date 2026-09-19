@@ -1,6 +1,6 @@
 // Path: app/read/page.tsx
-// Status: OPDATERET (tom-tilstanden er nu læser-rettet info om Midnight Page
-// — ingen forfatter-CTA, det hører til på /writer-landingsiden)
+// Status: OPDATERET (sprog-piller fjernet, filtrerer nu altid på dansk, jf.
+// beslutning om kun ét sprog)
 // Formål: Bibliotekets forside. Genre kommer fra projects (books har den
 // ikke direkte), så vi slår projekt-genre op separat og grupperer i JS —
 // undgår embedded/join-selects, som vores Relationships-typer ikke
@@ -8,30 +8,17 @@
 
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import type { AppLanguage, Book } from '@/lib/types/database'
-
-const LANGS: { code: AppLanguage; label: string }[] = [
-  { code: 'da', label: 'Dansk' },
-  { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
-]
+import type { Book } from '@/lib/types/database'
 
 const SPINE_ACCENTS = ['#E4A44C', '#7A2B32']
 
-export default async function ReadHomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ lang?: string }>
-}) {
-  const { lang } = await searchParams
-  const activeLang = (LANGS.some((l) => l.code === lang) ? lang : 'da') as AppLanguage
-
+export default async function ReadHomePage() {
   const supabase = await createClient()
   const { data: books } = await supabase
     .from('books')
-    .select('id, title, description, slug, language, project_id, published_at')
+    .select('id, title, description, slug, project_id, published_at')
     .eq('status', 'published')
-    .eq('language', activeLang)
+    .eq('language', 'da')
     .order('published_at', { ascending: false })
 
   const projectIds = [...new Set((books ?? []).map((b) => b.project_id))]
@@ -55,23 +42,8 @@ export default async function ReadHomePage({
 
   return (
     <div>
-      <div className="flex items-center justify-between px-6 py-6">
+      <div className="px-6 py-6">
         <span className="font-display text-lg text-[#F2E8D5]">Midnight Page</span>
-        <div className="flex gap-4 text-sm">
-          {LANGS.map((l) => (
-            <Link
-              key={l.code}
-              href={`/read?lang=${l.code}`}
-              className={
-                activeLang === l.code
-                  ? 'text-[#E4A44C]'
-                  : 'text-[#8B90AD] transition-colors hover:text-[#F2E8D5]'
-              }
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
       </div>
 
       {featured ? (
@@ -100,10 +72,9 @@ export default async function ReadHomePage({
             Historier født med en forfatter og en AI-partner
           </h1>
           <p className="mx-auto mt-6 max-w-xl font-reading text-lg leading-relaxed text-[#B8BAD1]">
-            Midnight Page samler original skønlitteratur på dansk, engelsk og spansk —
-            skrevet af rigtige forfattere med hjælp fra AI. Der er endnu ingen bøger
-            udgivet på dette sprog, men de første historier er på vej. Kig forbi igen
-            snart.
+            Midnight Page samler original skønlitteratur, skrevet af rigtige
+            forfattere med hjælp fra AI. Der er endnu ingen bøger udgivet, men de
+            første historier er på vej. Kig forbi igen snart.
           </p>
         </section>
       )}
