@@ -1,7 +1,6 @@
 // Path: app/read/page.tsx
-// Status: OPDATERET (fuldt redesign — Reader's Portal har nu sin egen visuelle
-// identitet: mørk "ink"-baggrund, fremhævet bog øverst, genre-hylder med
-// bogrygge i stedet for et SaaS-kort-gitter)
+// Status: OPDATERET (tom-tilstanden er nu læser-rettet info om Midnight Page
+// — ingen forfatter-CTA, det hører til på /writer-landingsiden)
 // Formål: Bibliotekets forside. Genre kommer fra projects (books har den
 // ikke direkte), så vi slår projekt-genre op separat og grupperer i JS —
 // undgår embedded/join-selects, som vores Relationships-typer ikke
@@ -96,9 +95,15 @@ export default async function ReadHomePage({
           </div>
         </section>
       ) : (
-        <section className="px-6 py-24 text-center">
-          <p className="font-reading text-lg text-[#8B90AD]">
-            Ingen publicerede bøger på dette sprog endnu.
+        <section className="mx-auto max-w-2xl px-6 py-24 text-center">
+          <h1 className="font-display text-4xl font-medium leading-tight text-[#F2E8D5] md:text-5xl">
+            Historier født med en forfatter og en AI-partner
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl font-reading text-lg leading-relaxed text-[#B8BAD1]">
+            Midnight Page samler original skønlitteratur på dansk, engelsk og spansk —
+            skrevet af rigtige forfattere med hjælp fra AI. Der er endnu ingen bøger
+            udgivet på dette sprog, men de første historier er på vej. Kig forbi igen
+            snart.
           </p>
         </section>
       )}
