@@ -1,5 +1,5 @@
 // Path: app/(writer)/projects/[id]/books/page.tsx
-// Status: OPDATERET (redirect-mål rettet fra /login til /writer/login)
+// Status: OPDATERET (sprog-dropdown fjernet — hardcoder til dansk)
 // Formål: Liste over bøger i et projekt + opret ny bog. Ved oprettelse genereres en
 // unik slug, og der oprettes automatisk et første kapitel, så forfatteren kan gå
 // direkte i gang med at skrive.
@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { slugify } from '@/lib/utils/slugify'
-import type { AppLanguage } from '@/lib/types/database'
 
 async function createBook(projectId: string, formData: FormData) {
   'use server'
@@ -20,7 +19,7 @@ async function createBook(projectId: string, formData: FormData) {
 
   const title = formData.get('title') as string
   const description = (formData.get('description') as string) || null
-  const language = formData.get('language') as AppLanguage
+  const language = 'da' as const
   const slug = slugify(title)
 
   const { data: book, error } = await supabase
@@ -68,7 +67,7 @@ export default async function BooksPage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, title, language')
+    .select('id, title')
     .eq('id', projectId)
     .single()
 
@@ -133,22 +132,6 @@ export default async function BooksPage({
             rows={3}
             className="mt-1 w-full rounded-md border px-3 py-2"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium" htmlFor="language">
-            Sprog
-          </label>
-          <select
-            id="language"
-            name="language"
-            defaultValue={project.language}
-            className="mt-1 w-full rounded-md border px-3 py-2"
-          >
-            <option value="da">Dansk</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-          </select>
         </div>
 
         <button
