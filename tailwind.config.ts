@@ -1,5 +1,5 @@
 // Path: tailwind.config.ts
-// Status: OPDATERET (tilføjet font-display/reading/ui til Reader's Portal)
+// Status: OPDATERET (tilføjet font-chapter til skrive-editoren, ud over Reader's Portal-fontene)
 // Formål: Mapper CSS-variablerne fra globals.css til Tailwind-farveklasser
 // (bg-background, text-muted-foreground osv.) og aktiverer tailwindcss-animate.
 
@@ -25,6 +25,7 @@ const config: Config = {
         display: ['var(--font-display)'],
         reading: ['var(--font-reading)'],
         ui: ['var(--font-ui)'],
+        chapter: ['var(--font-chapter)'],
       },
       colors: {
         border: 'hsl(var(--border))',
