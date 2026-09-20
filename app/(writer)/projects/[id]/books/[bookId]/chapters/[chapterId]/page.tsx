@@ -1,5 +1,6 @@
 // Path: app/(writer)/projects/[id]/books/[bookId]/chapters/[chapterId]/page.tsx
-// Status: OPDATERET (initialContent-faldback tjekker nu for gyldigt type-felt, ikke kun null/undefined — se migration 0004)
+// Status: OPDATERET (titlen er flyttet ind i ChapterEditor som et redigerbart
+// felt — den statiske h1 herude er væk, initialTitle gives med i stedet)
 // Formål: Henter kapitlet + alle bogens kapitler (Outline) + projektets
 // karakterer og plot-noter (Story Bible). EditorLayout ejer Zen mode-
 // tilstanden og skjuler Outline/Story Bible helt når den er aktiv.
@@ -82,14 +83,12 @@ export default async function ChapterPage({
         />
       }
     >
-      <h1 className="text-2xl font-semibold">{chapter.title}</h1>
-      <div className="mt-6">
-        <ChapterEditor
-          chapterId={chapter.id}
-          projectId={book.project_id}
-          initialContent={initialContent}
-        />
-      </div>
+      <ChapterEditor
+        chapterId={chapter.id}
+        projectId={book.project_id}
+        initialTitle={chapter.title}
+        initialContent={initialContent}
+      />
     </EditorLayout>
   )
 }
