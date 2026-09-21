@@ -1,5 +1,6 @@
 // Path: components/editor/chapter-editor.tsx
-// Status: OPDATERET (redigerbart titel-felt + rigtig styling af skrive-fladen)
+// Status: OPDATERET (Co-writer er nu en flydende knap/popup i stedet for en
+// fast blok — giver den også kapitlets skrevne tekst som kontekst)
 // Formål: Titel autosaves separat fra content (samme PATCH-endpoint, forskellige
 // felter). Bruger Source Serif 4 til selve teksten — en seriff designet til
 // læsning — og .chapter-editor-content (globals.css) til at style overskrifter/
@@ -114,6 +115,12 @@ export function ChapterEditor({
     editor.chain().focus().insertContentAt(end, `\n${text}`).run()
   }, [])
 
+  const getContextText = useCallback(() => {
+    const editor = editorRef.current
+    if (!editor) return ''
+    return editor.state.doc.textBetween(0, editor.state.doc.content.size, '\n\n')
+  }, [])
+
   return (
     <div className={sourceSerif.variable}>
       <div className="mb-2 text-xs text-muted-foreground">
@@ -172,7 +179,11 @@ export function ChapterEditor({
         </EditorRoot>
       </div>
 
-      <CowriterPanel projectId={projectId} onInsert={insertText} />
+      <CowriterPanel
+        projectId={projectId}
+        getContextText={getContextText}
+        onInsert={insertText}
+      />
     </div>
   )
 }
