@@ -1,7 +1,6 @@
 // Path: app/api/ai/cowriter/route.ts
-// Status: OPDATERET (Anthropic-kaldet er nu i try/catch — uden det crashede
-// hele endpointet uden om JSON ved fejl, så klienten kun så en generisk
-// "kunne ikke kontakte"-besked i stedet for den faktiske årsag)
+// Status: OPDATERET (tager nu contextText — den skrevne tekst i kapitlet —
+// med i prompten, så AI'en har noget konkret at arbejde med)
 // Formål: AI Co-writer-endpoint. Henter Story Bible (synopsis + karakterer), kalder
 // Claude med Prompt Caching, og trækker credits fra brugerens saldo efter kaldet
 // baseret på det faktiske token-forbrug (inkl. cache-oprettelse).
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { projectId, prompt, model = 'sonnet' } = await request.json()
+  const { projectId, prompt, model = 'sonnet', contextText } = await request.json()
 
   if (!projectId || !prompt) {
     return NextResponse.json(
@@ -69,13 +68,17 @@ export async function POST(request: Request) {
   const system = buildSystemPrompt(project, characters ?? [])
   const modelId = MODELS[model as keyof typeof MODELS] ?? MODELS.sonnet
 
+  const userMessage: string = contextText
+    ? `Teksten forfatteren har skrevet i kapitlet indtil videre (til kontekst — skriv ikke om denne del, brug den kun til at forstå hvor historien er):\n\n${String(contextText).slice(-3000)}\n\n---\n\nForfatterens instruktion: ${prompt}`
+    : prompt
+
   let response
   try {
     response = await anthropic.messages.create({
       model: modelId,
       max_tokens: 2048,
       system,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content: userMessage }],
     })
   } catch (error) {
     console.error('Anthropic-kald fejlede:', error)
